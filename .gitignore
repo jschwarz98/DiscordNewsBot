@@ -1,0 +1,7 @@
+test.db
+uuids.db
+.env
+/build/
+/.idea/
+/gradle/
+/.gradle/
