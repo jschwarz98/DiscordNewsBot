@@ -12,6 +12,10 @@ public class DotEnv {
 
 	public DotEnv(String path) throws FileNotFoundException {
 		environmentVariables = new HashMap<>();
+		// Default Values, if any...
+		environmentVariables.put(Key.POLLING_RATE.value, "60"); // polling every 60 seconds
+		environmentVariables.put(Key.DATABASE_PATH.value, "./uuids.db");
+
 		readDotEnvFile(path);
 	}
 
@@ -22,11 +26,19 @@ public class DotEnv {
 	}
 
 	private void addToEnvironmentVariables(String s) {
-		int equalsIndex = s.indexOf("=");
-		String key = s.substring(0, equalsIndex);
-		String value = s.substring(equalsIndex + 1);
-		if (key.isEmpty() || value.isEmpty())
+		String trimmed = s.trim();
+
+		if (trimmed.startsWith("#")) return; // comment
+		if (!trimmed.contains("=")) return; // no value assignment
+		if (trimmed.indexOf("=") + 1 == trimmed.length()) return; // no value after '='
+
+		int separator = trimmed.indexOf("=");
+		String key = trimmed.substring(0, separator);
+		String value = trimmed.substring(separator + 1);
+
+		if (key.isEmpty() || value.isEmpty()) // overlooked cases
 			return;
+
 		environmentVariables.put(key, value);
 	}
 
@@ -35,9 +47,13 @@ public class DotEnv {
 	}
 
 	public enum Key {
+
+		DATABASE_PATH("DATABASE_PATH"),
+		POLLING_RATE("POLLING_RATE_IN_SECONDS"),
+
 		TOKEN("TOKEN"),
-		NEWS_SERVER("NEWS_SERVER"),
-		RSS_FEED_SOURCE("RSS_FEED_SOURCE");
+
+		NEWS_CHANNEL_ID("NEWS_CHANNEL_ID");
 
 
 		public final String value;

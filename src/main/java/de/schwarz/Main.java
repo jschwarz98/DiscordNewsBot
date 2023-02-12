@@ -1,22 +1,28 @@
 package de.schwarz;
 
 import de.schwarz.bot.DiscordBot;
-import de.schwarz.spiegel.rss.RssDatabase;
+import de.schwarz.rss.RssDatabase;
+import net.dv8tion.jda.api.JDA;
 
 import java.io.FileNotFoundException;
 import java.util.Random;
+
+import static de.schwarz.DotEnv.Key.DATABASE_PATH;
+import static de.schwarz.DotEnv.Key.TOKEN;
 
 public class Main {
 	public static Random r = new Random();
 
 	public static DotEnv env;
+	public static JDA jda;
 
 	public static void main(String[] args) {
 		readDotEnv();
-		String token = env.getValue(DotEnv.Key.TOKEN.value);
-		String serverId = env.getValue(DotEnv.Key.NEWS_SERVER.value);
-		RssDatabase.initialize("uuids.db");
-		DiscordBot discordBot = new DiscordBot(token, serverId);
+
+		RssDatabase.initialize(env.getValue(DATABASE_PATH.value));
+
+		String token = env.getValue(TOKEN.value);
+		new DiscordBot(token);
 	}
 
 	private static void readDotEnv() {

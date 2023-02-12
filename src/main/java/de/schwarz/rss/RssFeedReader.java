@@ -1,4 +1,6 @@
-package de.schwarz.spiegel.rss;
+package de.schwarz.rss;
+
+import de.schwarz.rss.xml.RssFeed;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -17,6 +19,7 @@ public class RssFeedReader {
 		}
 	}
 
+
 	private RssFeedReader() {
 	}
 
@@ -24,6 +27,7 @@ public class RssFeedReader {
 		try {
 			return Optional.of((RssFeed) unmarshaller.unmarshal(url));
 		} catch (JAXBException e) {
+			System.out.println("Error reading feed: " + url);
 			e.printStackTrace();
 			return Optional.empty();
 		}

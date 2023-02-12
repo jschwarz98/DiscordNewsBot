@@ -1,19 +1,16 @@
-package de.schwarz.spiegel.rss;
+package de.schwarz.rss;
 
 import java.sql.*;
 
 public class RssDatabase {
 
-	private static final String url = "jdbc:sqlite:./";
+	private static final String url = "jdbc:sqlite:";
 	private static RssDatabase db;
 	private Connection connection;
 
 	private RssDatabase(String file) {
 		try {
 			Connection conn = DriverManager.getConnection(url + file);
-			DatabaseMetaData meta = conn.getMetaData();
-			System.out.println("The driver name is " + meta.getDriverName());
-			System.out.println("A new database has been created.");
 
 			Statement statement = conn.createStatement();
 			String sql = "CREATE TABLE IF NOT EXISTS ITEM (uuid  TEXT PRIMARY KEY);";
@@ -27,7 +24,7 @@ public class RssDatabase {
 	}
 
 	public static RssDatabase getInstance() {
-		if (db == null) throw new RuntimeException("DB muss initialisiert sein!");
+		if (db == null) throw new RuntimeException("Database must be initialized first!");
 		return db;
 	}
 
@@ -35,7 +32,7 @@ public class RssDatabase {
 		if (db == null) {
 			db = new RssDatabase(file);
 		}
-		return db;
+		return getInstance();
 	}
 
 	public boolean existsUUID(String uuid) {
@@ -54,6 +51,8 @@ public class RssDatabase {
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("INSERT INTO ITEM (uuid) VALUES ('" + uuid + "')");
 		} catch (SQLException e) {
+			System.out.println("uuid: " + uuid);
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}

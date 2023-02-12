@@ -1,4 +1,4 @@
-package de.schwarz.spiegel.rss;
+package de.schwarz.rss.xml;
 
 import lombok.Data;
 

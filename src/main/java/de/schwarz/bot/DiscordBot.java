@@ -1,61 +1,35 @@
 package de.schwarz.bot;
 
-import de.schwarz.DotEnv;
 import de.schwarz.Main;
-import de.schwarz.bot.commands.MessageInCommandListener;
-import de.schwarz.spiegel.rss.NewsScraperJob;
-import de.schwarz.spiegel.rss.RssDatabase;
-import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import okhttp3.OkHttpClient;
 
-import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 public class DiscordBot {
 
-	public boolean running = true;
-	@Getter
-	private Guild guild;
+	public DiscordBot(String token) {
 
-	public DiscordBot(String token, String serverId) {
-		JDA jdaConnection = JDABuilder
+		JDA jda = JDABuilder
 				.createDefault(token)
+				.setHttpClientBuilder(new OkHttpClient.Builder().readTimeout(20, TimeUnit.SECONDS))
 				.enableIntents(
-						GatewayIntent.GUILD_MEMBERS,
-						GatewayIntent.GUILD_MESSAGES
+						GatewayIntent.GUILD_MESSAGES,
+						GatewayIntent.MESSAGE_CONTENT
 				)
 				.build();
 		try {
-			jdaConnection.awaitReady();
-			jdaConnection.getPresence().setActivity(Activity.watching("Spiegel-Schlagzeilen"));
-			jdaConnection.addEventListener(new MessageInCommandListener());
-			guild = jdaConnection.getGuildById(serverId);
+			jda.awaitReady();
+			jda.getPresence().setActivity(Activity.watching("News"));
+			jda.addEventListener(new MessageInCommandListener());
 
-			System.out.println("Client is Ready!");
+			Main.jda = jda;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			System.exit(1);
 		}
-		startNewsFeedTracking();
-	}
-
-	private void startNewsFeedTracking() {
-		Thread newsFeed = new Thread(() -> {
-			NewsScraperJob job = new NewsScraperJob(this, RssDatabase.getInstance(), Main.env.getValue(DotEnv.Key.RSS_FEED_SOURCE.value));
-			while (running) {
-				try {
-					job.run();
-					long seconds = 1000;
-					LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(60 * seconds));
-				} catch (MalformedURLException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		});
-		newsFeed.start();
 	}
 }
